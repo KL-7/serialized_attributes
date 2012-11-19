@@ -40,12 +40,14 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
 end
 
-require 'rcov/rcovtask'
-Rcov::RcovTask.new('test:cov') do |test|
-  test.libs << 'lib'
-  test.pattern   = 'test/**/*.rb'
-  test.verbose   = true
-  test.rcov_opts = ['-T', '--sort coverage', '--exclude gems/,spec/']
-end
-
 task :default => :test
+
+if RUBY_VERSION < '1.9.0'
+  require 'rcov/rcovtask'
+  Rcov::RcovTask.new('test:cov') do |test|
+    test.libs << 'lib'
+    test.pattern   = 'test/**/*.rb'
+    test.verbose   = true
+    test.rcov_opts = ['-T', '--sort coverage', '--exclude gems/,spec/']
+  end
+end

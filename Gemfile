@@ -7,5 +7,5 @@ group :development do
 end
 
 group :test do
-  gem "rcov"
+  gem "rcov", :platform => :mri_18
 end
