@@ -65,7 +65,7 @@ module SerializedAttributes
         @attributes[key] = attributes.has_key?(key) ? attributes[key] : column.default
       end
 
-      attributes.slice!(*serialized_attributes_definition.keys)
+      attributes.slice!(*serialized_attribute_names)
     end
   end
 
@@ -78,7 +78,7 @@ module SerializedAttributes
       end
     end
 
-    attributes.slice!(*serialized_attributes_definition.keys)
+    attributes.slice!(*serialized_attribute_names)
   end
 
   def to_variable(sym)
