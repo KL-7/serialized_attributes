@@ -4,14 +4,11 @@ module SerializedAttributes
     return if base.respond_to?(:serialized_attributes_definition)
 
     base.class_eval do
-      class_inheritable_hash :serialized_attributes_definition
-      write_inheritable_attribute(:serialized_attributes_definition, {})
+      base.extend ClassMethods
 
       cattr_accessor :serialized_attributes_column
       self.serialized_attributes_column = :serialized_attributes
       serialize serialized_attributes_column, Hash
-
-      base.extend ClassMethods
     end
   end
 
@@ -42,12 +39,26 @@ module SerializedAttributes
       end
 
       define_method(name) do
-        self.class.serialized_attributes_definition[name].type_cast(@attributes.fetch(name, options[:default]))
+        serialized_attributes_definition[name].type_cast(@attributes.fetch(name, options[:default]))
       end
 
       alias_method("#{name}?", name) if type == :boolean
 
-      attr_accessible name if options[:attr_accessible]
+      attr_accessible(name) if options[:attr_accessible]
+    end
+
+    def serialized_attributes_definition
+      @serialized_attributes_definition ||= load_parent_serialized_attributes_definition
+    end
+
+    private
+
+    def load_parent_serialized_attributes_definition
+      if superclass.respond_to?(:serialized_attributes_definition)
+        superclass.serialized_attributes_definition.dup
+      else
+        {}
+      end
     end
 
   end
@@ -83,6 +94,12 @@ module SerializedAttributes
     end
 
     attributes.slice!(*serialized_attribute_names)
+  end
+
+  private
+
+  def serialized_attributes_definition
+    self.class.serialized_attributes_definition
   end
 
   Boolean = Class.new # stub for Boolean type
