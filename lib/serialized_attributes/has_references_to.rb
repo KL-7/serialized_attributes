@@ -1,21 +1,24 @@
+require 'active_record'
+
 module ActiveRecord
   module Associations
 
     class HasReferencesToAssociation < HasManyAssociation
+
       def ids
         (@owner["#{@reflection.name.to_s.singularize}_ids"] ||= []).map(&:to_i)
       end
-      
+
       def ids=(array = [])
         @owner["#{@reflection.name.to_s.singularize}_ids"] = array.map(&:to_i)
       end
-      
+
       def construct_sql
         @finder_sql = "#{@reflection.quoted_table_name}.id IN (#{ids * ', '})"
         @finder_sql << " AND (#{conditions})" if conditions
         @counter_sql = @finder_sql
       end
-      
+
       def insert_record(record, force = false, validate = true)
         load_target
         set_belongs_to_association_for(record)
@@ -23,11 +26,11 @@ module ActiveRecord
         self.ids = (ids + [record.id]) if result
         result
       end
-      
+
       def delete_records(records)
         self.ids = ids - records.map(&:id)
       end
-      
+
       def create(attrs = {})
         if attrs.is_a?(Array)
           attrs.collect { |attr| create(attr) }
@@ -43,11 +46,11 @@ module ActiveRecord
         create_record(attrs) do |record|
           yield(record) if block_given?
           record.save!
-          self.ids = (ids << record.id)           
+          self.ids = (ids << record.id)
         end
-      end      
+      end
     end
-  
+
     module ClassMethods
       def create_has_references_to_reflection(association_id, options, &extension)
         #options.assert_valid_keys(valid_keys_for_has_many_association)
@@ -56,7 +59,7 @@ module ActiveRecord
         write_inheritable_hash :reflections, name => reflection
         reflection
       end
-  
+
       def has_references_to(association_id, options = {}, &extension)
         reflection = create_has_references_to_reflection(association_id, options, &extension)
         configure_dependency_for_has_many(reflection)

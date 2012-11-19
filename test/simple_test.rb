@@ -15,7 +15,7 @@ class DocumentsSchema < ActiveRecord::Migration
       t.integer :reference_id           # <---  you can also define any sql columns for your indexes
       t.timestamps
     end
-    
+
     create_table :widgets do |t|
       t.string :name
       t.boolean :active
@@ -38,7 +38,6 @@ class Post < Document
   has_references_to :comments
 
   validates_presence_of :title, :body
-
 end
 
 class Comment < Document
@@ -47,7 +46,6 @@ class Comment < Document
   belongs_to :post
 
   validates_presence_of :body
-
 end
 
 class ModelBefore < ActiveRecord::Base
@@ -68,7 +66,7 @@ end
 
 class Widget < ActiveRecord::Base
   include SerializedAttributes
-  
+
   #white list the name attribute, others may not be mass assigned
   attr_accessible :name, String
 end
@@ -76,7 +74,7 @@ end
 class Sprocket < Widget
   #we want the attribute in_motion, but it may not be mass assigned
   attribute :in_motion, Boolean
-  
+
   #we want to allow the size attribute to be mass assigned
   accessible_attribute :size, Integer
 end
@@ -92,14 +90,14 @@ class SimpleTest < Test::Unit::TestCase
     post.comments << Comment.new(:body => "this is a comment")
     post.comments << Comment.create(:body => "this is second comment")
     post.comments.create(:body => "one more")
-        
+
     assert_equal Comment.all.map(&:id), post.comment_ids
     post.save
-    
+
     assert_equal 3, post.reload.comments.size
   end
-  
-  
+
+
   # => it should initialize attributes on objects even if they were serialized before that attribute existed
   def test_null_serialized_attributes_column_on_already_exists_records
     # => to test this, we create a model (ModelBefore) that has no attributes (but has an attributes column)
@@ -107,10 +105,10 @@ class SimpleTest < Test::Unit::TestCase
     # => We create an object using ModelBefore and then try to load it using ModelAfter.
     model_before = ModelBefore.create
     model_after = ModelAfter.find(model_before.id)
-  
+
     assert_equal model_after.custom_field, 'default value'
   end
-  
+
   # => it should not unpack custom attributes on objects if they have been removed
   def test_removed_custom_field
     # => to test this, we use a similar method to the prior test, but change (or remove) an attribute
@@ -118,25 +116,25 @@ class SimpleTest < Test::Unit::TestCase
     model2 = ModelSecond.find(model1.id)
     model2.save!
     model2.reload
-    
+
     assert_equal model2.serialized_attributes.keys.include?('custom_field'), false
   end
-  
+
   # => it should create attributes as whitelisted and allow their mass assignment
   def test_accessible_attributes_are_created
     sprocket = Sprocket.create(:name => "Spacely's Space Sprocket", :size => 99)
     assert sprocket.size == 99
   end
-  
+
   # => test that the names of the serialized attributes are correctly returned by a class
   def test_serizalied_attribute_names_are_returned_by_the_class
     assert Sprocket.serialized_attribute_names.sort == ['in_motion', 'size'].sort
   end
-  
+
   # => test that the names of the serialized attributes are correctly returned by the instance
   def test_serizalied_attribute_names_are_returned_by_an_instance
     assert Sprocket.new.serialized_attribute_names.sort == ['in_motion', 'size'].sort
-  end  
+  end
 
   # => test that default value is proprely used in just created model
   def test_default_value_in_just_create_model
