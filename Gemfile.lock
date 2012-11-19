@@ -34,5 +34,6 @@ PLATFORMS
 DEPENDENCIES
   activerecord (~> 3.0.0)
   jeweler
+  rake
   rcov
   sqlite3
