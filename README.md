@@ -31,21 +31,20 @@ Example of usage
       attribute :title, String
       attribute :body,  String
       attribute :is_published, Boolean, :default => false
-      
+
       attribute :comment_ids, Array             # <--- serialized Array of ids of associated comments
       has_references_to :comments
-      
+
       validates_presence_of :title, :body
     end
-    
+
     class Comment < Document
       attribute :body, String, :requied => true # <--- validates_presence_of :body
       attribute :post_id, Integer
       belongs_to :post
     end
-    
-IRB fun
--------
+
+### IRB fun
 
     post = Post.create(:title => "First Post", :body => "Lorem ...")
     assert !post.new_record?
@@ -55,18 +54,19 @@ IRB fun
     post.save
     assert post.reload.comments.length == 2
 
-# Mass Assignment and Protect Attributes
-	class Widget < ActiveRecord::Base
-	  include SerializedAttributes
-	
-	  #protect other attributes from mass assignment
-	  attr_accessible :name
+### Mass Assignment and Protect Attributes
 
-		#specifically permit a given serialized attribute to be mass assigned
-	  accessible_attribute :creator, String
-	end
+    class Widget < ActiveRecord::Base
+      include SerializedAttributes
 
+      # protect other attributes from mass assignment
+      attr_accessible :name
 
-# limitations
+      # specifically permit a given serialized attribute to be mass assigned
+      accessible_attribute :creator, String
+    end
+
+Limitations
+----------------
 - has-references-to association dont update reverse association
 - serialized-attributes column saved every time you call :save without depending on what is actually changed
