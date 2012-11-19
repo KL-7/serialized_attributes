@@ -48,6 +48,10 @@ class Comment < Document
   validates_presence_of :body
 end
 
+class CommentWithAuthor < Comment
+  attribute :author, String
+end
+
 class ModelBefore < ActiveRecord::Base
   set_table_name :documents
 end
@@ -81,8 +85,7 @@ end
 
 
 class SimpleTest < Test::Unit::TestCase
-  #ActiveRecord::Base.logger = Logger.new(STDOUT)
-  DocumentsSchema.suppress_messages{ DocumentsSchema.migrate(:up) }
+  DocumentsSchema.suppress_messages { DocumentsSchema.migrate(:up) }
 
   def test_simple
     post = Post.create(:title => "First Post", :body => "Lorem ...")
@@ -97,6 +100,11 @@ class SimpleTest < Test::Unit::TestCase
     assert_equal 3, post.reload.comments.size
   end
 
+  # => test that serialized attribute definitions are not propagated back to the parent class
+  def test_child_attributes_are_not_added_to_the_parent_model
+    assert_equal %w[author body post_id], CommentWithAuthor.serialized_attribute_names.sort
+    assert_equal %w[body post_id], Comment.serialized_attribute_names.sort
+  end
 
   # => it should initialize attributes on objects even if they were serialized before that attribute existed
   def test_null_serialized_attributes_column_on_already_exists_records

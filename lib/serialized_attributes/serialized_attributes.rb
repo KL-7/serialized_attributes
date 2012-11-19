@@ -17,10 +17,6 @@ module SerializedAttributes
 
   module ClassMethods
 
-    def serialized_attributes_definition
-      read_inheritable_attribute(:serialized_attributes_definition)
-    end
-
     def instantiate(record)
       object = super(record)
       object.unpack_serialized_attributes!
@@ -81,12 +77,11 @@ module SerializedAttributes
     attributes.slice!(*serialized_attribute_names)
   end
 
-  def to_variable(sym)
-    "@#{sym.to_s}".to_sym
-  end
+  Boolean = Class.new # stub for Boolean type
 
-  def self.type_to_sqltype(type)
-    {
+  class << self
+
+    CLASSES_TO_SQL_TYPES = {
         String     => :string,
         Boolean    => :boolean,
         Fixnum     => :integer,
@@ -96,9 +91,12 @@ module SerializedAttributes
         Date       => :date,
         Time       => :time,
         DateTime   => :time
-    }.fetch(type, type)
-  end
+    }
 
-  Boolean = Class.new
+    def type_to_sqltype(type)
+      CLASSES_TO_SQL_TYPES.fetch(type, type)
+    end
+
+  end
 
 end
