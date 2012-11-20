@@ -155,4 +155,15 @@ class SimpleTest < Test::Unit::TestCase
     model.reload
     assert_equal 'new default value', model.custom_field_renamed
   end
+
+  # => test that attribute_name? methods are defined for boolean attributes
+  def test_boolean_attribute_getter_with_a_question_mark
+    widget = Sprocket.new
+
+    widget.in_motion = true
+    assert_equal true, widget.in_motion?
+
+    widget.in_motion = false
+    assert_equal false, widget.in_motion?
+  end
 end
