@@ -7,7 +7,7 @@ module SerializedAttributes
       base.extend ClassMethods
 
       cattr_accessor :serialized_attributes_column
-      self.serialized_attributes_column = :serialized_attributes
+      self.serialized_attributes_column = :serialized_attributes_data
       serialize serialized_attributes_column, Hash
     end
   end
@@ -54,11 +54,7 @@ module SerializedAttributes
     private
 
     def load_parent_serialized_attributes_definition
-      if superclass.respond_to?(:serialized_attributes_definition)
-        superclass.serialized_attributes_definition.dup
-      else
-        {}
-      end
+      superclass.respond_to?(:serialized_attributes_definition) ? superclass.serialized_attributes_definition.dup : {}
     end
 
   end

@@ -10,7 +10,7 @@ ActiveRecord::Base.establish_connection :adapter => 'sqlite3', :database => ':me
 class DocumentsSchema < ActiveRecord::Migration
   def self.up
     create_table :documents do |t|
-      t.text :serialized_attributes
+      t.text :serialized_attributes_data
       t.string :type
       t.timestamps
     end
@@ -18,7 +18,7 @@ class DocumentsSchema < ActiveRecord::Migration
     create_table :widgets do |t|
       t.string :name
       t.boolean :active
-      t.text :serialized_attributes
+      t.text :serialized_attributes_data
       t.timestamps
     end
   end
@@ -53,17 +53,17 @@ class CommentWithAuthor < Comment
 end
 
 class ModelBefore < ActiveRecord::Base
-  set_table_name :documents
+  self.table_name = :documents
 end
 
 class ModelAfter < ActiveRecord::Base
-  set_table_name :documents
+  self.table_name = :documents
   include SerializedAttributes
   attribute :custom_field, String, :default => 'default value'
 end
 
 class ModelSecond < ActiveRecord::Base
-  set_table_name :documents
+  self.table_name = :documents
   include SerializedAttributes
   attribute :custom_field_renamed, String, :default => 'new default value'
 end
@@ -118,7 +118,7 @@ class SimpleTest < Test::Unit::TestCase
     model2.save!
     model2.reload
 
-    assert_equal false, model2.serialized_attributes.include?('custom_field')
+    assert_equal false, model2.serialized_attributes_data.include?('custom_field')
   end
 
   # => it should create attributes as whitelisted and allow their mass assignment

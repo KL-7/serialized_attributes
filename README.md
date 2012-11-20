@@ -14,8 +14,8 @@ Example of usage
 
     create_table :documents do |t|
       t.string :type
-      t.text :serialized_attributes     # <---  here all your dynamic fields will be saved
-      t.integer :reference_id           # <---  you can also define any sql columns for your indexes
+      t.text :serialized_attributes_data     # <---  here all your dynamic fields will be saved
+      t.integer :reference_id                # <---  you can also define any sql columns for your indexes
       t.timestamps
     end
 
