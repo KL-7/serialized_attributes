@@ -69,27 +69,18 @@ module SerializedAttributes
   end
 
   def unpack_serialized_attributes!
-    if @attributes.has_key?(serialized_attributes_column.to_s)
-      attributes = self[serialized_attributes_column] || {}
+    serialized_attributes_hash = self[serialized_attributes_column] || {}
+    serialized_attributes_hash.slice!(*serialized_attribute_names)
 
-      serialized_attributes_definition.each do |key, column|
-        @attributes[key] = attributes.has_key?(key) ? attributes[key] : column.default
-      end
-
-      attributes.slice!(*serialized_attribute_names)
+    serialized_attributes_definition.each do |key, column|
+      @attributes[key] = serialized_attributes_hash.fetch(key, column.default)
     end
   end
 
   def pack_serialized_attributes!
-    if @attributes.has_key?(serialized_attributes_column.to_s)
-      attributes = self[serialized_attributes_column] ||= {}
-
-      serialized_attributes_definition.each_key do |key|
-        attributes[key] = send(key)
-      end
+    self[serialized_attributes_column] = serialized_attributes_definition.each_key.each_with_object({}) do |attribute_name, memo|
+      memo[attribute_name] = send(attribute_name)
     end
-
-    attributes.slice!(*serialized_attribute_names)
   end
 
   private

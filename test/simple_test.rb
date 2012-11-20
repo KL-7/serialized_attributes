@@ -93,10 +93,41 @@ class SimpleTest < Test::Unit::TestCase
     assert_equal true, Comment.respond_to?(:serialized_attributes_definition)
   end
 
+  # => test that the names of the serialized attributes are correctly returned by a class
+  def test_serizalied_attribute_names_are_returned_by_the_class
+    assert_equal %w[in_motion size], Sprocket.serialized_attribute_names.sort
+  end
+
+  # => test that the names of the serialized attributes are correctly returned by the instance
+  def test_serizalied_attribute_names_are_returned_by_an_instance
+    assert_equal %w[in_motion size], Sprocket.new.serialized_attribute_names.sort
+  end
+
   # => test that serialized attribute definitions are not propagated back to the parent class
   def test_child_attributes_are_not_added_to_the_parent_model
     assert_equal %w[author body post_id], CommentWithAuthor.serialized_attribute_names.sort
     assert_equal %w[body post_id], Comment.serialized_attribute_names.sort
+  end
+
+  # => it should save attributes assigned through setters
+  def test_attributes_assigned_through_setters
+    sprocket = Sprocket.new
+    sprocket.size = 99
+
+    assert_equal 99, sprocket.size
+
+    sprocket.save!
+
+    assert_equal 99, Sprocket.find(sprocket.id).size
+  end
+
+  # => it should create attributes as whitelisted and allow their mass assignment
+  def test_accessible_attributes_are_created
+    sprocket = Sprocket.create!(:name => "Spacely's Space Sprocket", :size => 99)
+    sprocket = Sprocket.find(sprocket.id)
+
+    assert_equal "Spacely's Space Sprocket", sprocket.name
+    assert_equal 99, sprocket.size
   end
 
   # => it should initialize attributes on objects even if they were serialized before that attribute existed
@@ -121,22 +152,6 @@ class SimpleTest < Test::Unit::TestCase
     assert_equal false, model2.serialized_attributes_data.include?('custom_field')
   end
 
-  # => it should create attributes as whitelisted and allow their mass assignment
-  def test_accessible_attributes_are_created
-    sprocket = Sprocket.create(:name => "Spacely's Space Sprocket", :size => 99)
-    assert_equal 99, sprocket.size
-  end
-
-  # => test that the names of the serialized attributes are correctly returned by a class
-  def test_serizalied_attribute_names_are_returned_by_the_class
-    assert_equal %w[in_motion size], Sprocket.serialized_attribute_names.sort
-  end
-
-  # => test that the names of the serialized attributes are correctly returned by the instance
-  def test_serizalied_attribute_names_are_returned_by_an_instance
-    assert_equal %w[in_motion size], Sprocket.new.serialized_attribute_names.sort
-  end
-
   # => test that default value is properly used in just created model
   def test_default_value_in_just_create_model
     assert_equal 'new default value', ModelSecond.new.custom_field_renamed
@@ -144,8 +159,8 @@ class SimpleTest < Test::Unit::TestCase
 
   # => test that default value is properly used in saved model
   def test_default_value_in_save_model
-    model = ModelSecond.create
-    model.reload
+    model = ModelSecond.create!
+    model = ModelSecond.find(model.id)
 
     assert_equal 'new default value', model.custom_field_renamed
   end
@@ -159,5 +174,10 @@ class SimpleTest < Test::Unit::TestCase
 
     widget.in_motion = false
     assert_equal false, widget.in_motion?
+  end
+
+  # => test that serialized attributes are accessible through model['attribute_name'] syntax
+  def test_hash_syntax_for_serialized_attributes
+    assert_equal 'widget_name', Widget.new(:name => 'widget_name')['name']
   end
 end
