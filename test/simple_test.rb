@@ -137,15 +137,16 @@ class SimpleTest < Test::Unit::TestCase
     assert_equal %w[in_motion size], Sprocket.new.serialized_attribute_names.sort
   end
 
-  # => test that default value is proprely used in just created model
+  # => test that default value is properly used in just created model
   def test_default_value_in_just_create_model
     assert_equal 'new default value', ModelSecond.new.custom_field_renamed
   end
 
-  # => test that default value is proprely used in saved model
+  # => test that default value is properly used in saved model
   def test_default_value_in_save_model
     model = ModelSecond.create
     model.reload
+
     assert_equal 'new default value', model.custom_field_renamed
   end
 
