@@ -3,16 +3,15 @@ require 'rubygems'
 require 'active_record'
 require 'logger'
 
-ActiveRecord::Base.establish_connection :adapter => 'sqlite3', :database => ':memory:'
+require "./lib/serialized_attributes"
 
-require File.dirname(__FILE__) + "/../lib/serialized_attributes"  # load plugin
+ActiveRecord::Base.establish_connection :adapter => 'sqlite3', :database => ':memory:'
 
 class DocumentsSchema < ActiveRecord::Migration
   def self.up
     create_table :documents do |t|
-      t.text :serialized_attributes     # <---  here all your dynamic fields will be saved
+      t.text :serialized_attributes
       t.string :type
-      t.integer :reference_id           # <---  you can also define any sql columns for your indexes
       t.timestamps
     end
 
@@ -26,10 +25,12 @@ class DocumentsSchema < ActiveRecord::Migration
 end
 
 class Document < ActiveRecord::Base
-  include SerializedAttributes
+  # base class without serialized attributes support
 end
 
 class Post < Document
+  include SerializedAttributes
+
   attribute :title, String
   attribute :body,  String
   attribute :is_published, Boolean, :default => false
@@ -41,6 +42,8 @@ class Post < Document
 end
 
 class Comment < Document
+  include SerializedAttributes
+
   attribute :body, String
   attribute :post_id, Integer
   belongs_to :post
@@ -71,15 +74,15 @@ end
 class Widget < ActiveRecord::Base
   include SerializedAttributes
 
-  #white list the name attribute, others may not be mass assigned
+  # white list the name attribute, others may not be mass assigned
   attr_accessible :name, String
 end
 
 class Sprocket < Widget
-  #we want the attribute in_motion, but it may not be mass assigned
+  # we want the attribute in_motion, but it may not be mass assigned
   attribute :in_motion, Boolean
 
-  #we want to allow the size attribute to be mass assigned
+  # we want to allow the size attribute to be mass assigned
   accessible_attribute :size, Integer
 end
 
@@ -100,6 +103,12 @@ class SimpleTest < Test::Unit::TestCase
     assert_equal 3, post.reload.comments.size
   end
 
+  # => test that nothing fails if the a parent class doesn't have serialized attributes
+  def test_parent_class_without_serialized_attributes
+    assert_equal false, Document.respond_to?(:serialized_attributes_definition)
+    assert_equal true, Comment.respond_to?(:serialized_attributes_definition)
+  end
+
   # => test that serialized attribute definitions are not propagated back to the parent class
   def test_child_attributes_are_not_added_to_the_parent_model
     assert_equal %w[author body post_id], CommentWithAuthor.serialized_attribute_names.sort
@@ -114,7 +123,7 @@ class SimpleTest < Test::Unit::TestCase
     model_before = ModelBefore.create
     model_after = ModelAfter.find(model_before.id)
 
-    assert_equal model_after.custom_field, 'default value'
+    assert_equal 'default value', model_after.custom_field
   end
 
   # => it should not unpack custom attributes on objects if they have been removed
@@ -125,23 +134,23 @@ class SimpleTest < Test::Unit::TestCase
     model2.save!
     model2.reload
 
-    assert_equal model2.serialized_attributes.keys.include?('custom_field'), false
+    assert_equal false, model2.serialized_attributes.include?('custom_field')
   end
 
   # => it should create attributes as whitelisted and allow their mass assignment
   def test_accessible_attributes_are_created
     sprocket = Sprocket.create(:name => "Spacely's Space Sprocket", :size => 99)
-    assert sprocket.size == 99
+    assert_equal 99, sprocket.size
   end
 
   # => test that the names of the serialized attributes are correctly returned by a class
   def test_serizalied_attribute_names_are_returned_by_the_class
-    assert Sprocket.serialized_attribute_names.sort == ['in_motion', 'size'].sort
+    assert_equal %w[in_motion size], Sprocket.serialized_attribute_names.sort
   end
 
   # => test that the names of the serialized attributes are correctly returned by the instance
   def test_serizalied_attribute_names_are_returned_by_an_instance
-    assert Sprocket.new.serialized_attribute_names.sort == ['in_motion', 'size'].sort
+    assert_equal %w[in_motion size], Sprocket.new.serialized_attribute_names.sort
   end
 
   # => test that default value is proprely used in just created model
@@ -151,7 +160,7 @@ class SimpleTest < Test::Unit::TestCase
 
   # => test that default value is proprely used in saved model
   def test_default_value_in_save_model
-    model =  ModelSecond.create
+    model = ModelSecond.create
     model.reload
     assert_equal 'new default value', model.custom_field_renamed
   end

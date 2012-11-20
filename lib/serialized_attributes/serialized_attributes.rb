@@ -23,24 +23,31 @@ module SerializedAttributes
       object
     end
 
-    def accessible_attribute(name, type, opts = {})
-      attribute(name, type, opts.merge(:attr_accessible => true))
+    def accessible_attribute(name, type, options = {})
+      attribute(name, type, options.merge(:attr_accessible => true))
     end
 
     def serialized_attribute_names
       serialized_attributes_definition.keys
     end
 
-    def attribute(name, type, opts = {})
+    def attribute(name, type, options = {})
       name = name.to_s
       type = SerializedAttributes.type_to_sqltype(type)
-      serialized_attributes_definition[name] = ActiveRecord::ConnectionAdapters::Column.new(name.to_s, opts[:default], type.to_s, nil)
 
-      define_method("#{name.to_s}=".to_sym) { |value| @attributes[name] = value }
-      define_method(name) { self.class.serialized_attributes_definition[name].type_cast(@attributes.fetch(name, opts[:default])) }
+      serialized_attributes_definition[name] = ActiveRecord::ConnectionAdapters::Column.new(name, options[:default], type)
+
+      define_method("#{name}=") do |value|
+        @attributes[name] = value
+      end
+
+      define_method(name) do
+        self.class.serialized_attributes_definition[name].type_cast(@attributes.fetch(name, options[:default]))
+      end
+
       alias_method("#{name}?", name) if type == :boolean
 
-      attr_accessible name if opts[:attr_accessible]
+      attr_accessible name if options[:attr_accessible]
     end
 
   end
