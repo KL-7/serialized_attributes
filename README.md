@@ -32,9 +32,6 @@ Example of usage
       attribute :body,  String
       attribute :is_published, Boolean, :default => false
 
-      attribute :comment_ids, Array             # <--- serialized Array of ids of associated comments
-      has_references_to :comments
-
       validates_presence_of :title, :body
     end
 
@@ -68,5 +65,4 @@ Example of usage
 
 Limitations
 ----------------
-- has-references-to association dont update reverse association
 - serialized-attributes column saved every time you call :save without depending on what is actually changed

@@ -1,2 +1,1 @@
-require 'serialized_attributes/has_references_to'
 require 'serialized_attributes/serialized_attributes'

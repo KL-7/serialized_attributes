@@ -24,7 +24,6 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "lib/serialized_attributes.rb",
-    "lib/serialized_attributes/has_references_to.rb",
     "lib/serialized_attributes/serialized_attributes.rb",
     "test/simple_test.rb"
   ]

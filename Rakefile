@@ -21,7 +21,6 @@ Jeweler::Tasks.new do |gem|
     Gemfile
     Gemfile.lock
     lib/serialized_attributes.rb
-    lib/serialized_attributes/has_references_to.rb
     lib/serialized_attributes/serialized_attributes.rb
     LICENSE.txt
     Rakefile

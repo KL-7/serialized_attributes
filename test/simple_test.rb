@@ -35,9 +35,6 @@ class Post < Document
   attribute :body,  String
   attribute :is_published, Boolean, :default => false
 
-  attribute :comment_ids, Array     # <--- serialized Array of ids of associated comments
-  has_references_to :comments
-
   validates_presence_of :title, :body
 end
 
@@ -89,19 +86,6 @@ end
 
 class SimpleTest < Test::Unit::TestCase
   DocumentsSchema.suppress_messages { DocumentsSchema.migrate(:up) }
-
-  def test_simple
-    post = Post.create(:title => "First Post", :body => "Lorem ...")
-    assert !post.new_record?
-    post.comments << Comment.new(:body => "this is a comment")
-    post.comments << Comment.create(:body => "this is second comment")
-    post.comments.create(:body => "one more")
-
-    assert_equal Comment.all.map(&:id), post.comment_ids
-    post.save
-
-    assert_equal 3, post.reload.comments.size
-  end
 
   # => test that nothing fails if the a parent class doesn't have serialized attributes
   def test_parent_class_without_serialized_attributes
