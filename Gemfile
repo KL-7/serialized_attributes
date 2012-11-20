@@ -1,6 +1,6 @@
 source :rubygems
 
-gem "activerecord", "~> 3.2.8"
+gem "activerecord", [">= 3.0.0", "< 3.3.0"]
 
 group :development do
   gem "rake"

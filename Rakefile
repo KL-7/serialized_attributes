@@ -12,10 +12,7 @@ Jeweler::Tasks.new do |gem|
   gem.email       = "emma.persky@gmail.com"
   gem.authors     = ["Emma Persky"]
 
-  gem.add_runtime_dependency 'activerecord', '~> 3.2.8'
-  gem.add_development_dependency 'rake'
-  gem.add_development_dependency 'sqlite3'
-  gem.add_development_dependency 'jeweler'
+  # all dependencies are specified in the Gemfile
 
   gem.files = %w[
     Gemfile
